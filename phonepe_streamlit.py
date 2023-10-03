@@ -35,10 +35,9 @@ st.set_page_config(page_title='Phonepe Pulse',page_icon='bar_chart',layout='wide
 
 # Title
 st.header(':violet[Phonepe Pulse Data Visualization and Exploration ]')
-st.write('**Note**:-This data between **2018** to **2023** in **INDIA**')
 
 # Selection option
-option = st.radio('**Select your option**',('Overall India', 'State wise','Top Tens'),horizontal=True)
+option = st.radio('**Select the option**',('Overall India', 'State wise','Top ten State - year wise','Top tens'),horizontal=True)
 
 # Overall India    
 
@@ -266,9 +265,18 @@ elif option =='State wise':
             # State wise Transaction Analysis bar chart 
             df_df_st_Trans_bar['Transaction_type'] = df_df_st_Trans_bar['Transaction_type'].astype(str)
             df_df_st_Trans_bar['Transaction_amount'] = df_df_st_Trans_bar['Transaction_amount'].astype(float)
+
+            # bar chart
+
             df_df_st_Trans_bar_fig = px.bar(df_df_st_Trans_bar , x = 'Transaction_type', y ='Transaction_amount', color ='Transaction_amount', color_continuous_scale = 'thermal', title = 'Transaction Analysis Chart', height = 500,)
             df_df_st_Trans_bar_fig.update_layout(title_font=dict(size=33),title_font_color='#6739b7')
             st.plotly_chart(df_df_st_Trans_bar_fig,use_container_width=True)
+
+            #pie chart
+
+            #df_df_st_Trans_bar_fig = px.pie(df_df_st_Trans_bar , names = 'Transaction_type', values ='Transaction_amount',hole=0.4) 
+            #st.plotly_chart(df_df_st_Trans_bar_fig)
+
 
             # State wise Total Transaction calculation Table
             st.header(':violet[Total calculation]')
@@ -323,9 +331,18 @@ elif option =='State wise':
         
             df_df_st_user_tab['Brands'] = df_df_st_user_tab['Brands'].astype(str)
             df_df_st_user_tab['User Count'] = df_df_st_user_tab['User Count'].astype(int)
-            df_df_st_user_tab_fig = px.bar(df_df_st_user_tab , x = 'Brands', y ='User Count', color ='User Count', color_continuous_scale = 'thermal', title = 'User Analysis Chart', height = 500,)
-            df_df_st_user_tab_fig.update_layout(title_font=dict(size=33),title_font_color='#6739b7')
-            st.plotly_chart(df_df_st_user_tab_fig,use_container_width=True)
+
+            # bar chart
+
+            #df_df_st_user_tab_fig = px.bar(df_df_st_user_tab , x = 'Brands', y ='User Count', color ='User Count', color_continuous_scale = 'thermal', title = 'User Analysis Chart', height = 500,)
+            #df_df_st_user_tab_fig.update_layout(title_font=dict(size=33),title_font_color='#6739b7')
+            #st.plotly_chart(df_df_st_user_tab_fig,use_container_width=True)
+
+            #pie chart
+            
+            df_df_st_user_tab_fig = px.pie(df_df_st_user_tab , names = 'Brands', values ='User Count',hole=0.4) 
+            st.plotly_chart(df_df_st_user_tab_fig)
+
            
 
         # State wise User Total User calculation Table  
@@ -347,7 +364,7 @@ elif option =='State wise':
 
 
 # Top lists
-else:
+elif option =='Top ten State - year wise':
 
     # Select tab
     tab5, tab6 = st.tabs(['Transaction','User'])
@@ -357,32 +374,34 @@ else:
         top_tr_yr = st.selectbox('**Select Year**', ('2018','2019','2020','2021','2022','2023'),key='top_tr_yr')
 
         # SQL Query
+        try:
+            # Top Transaction Analysis bar chart query
+            cursor.execute(f"SELECT State, SUM(Transaction_amount) As Transaction_amount FROM top_transaction WHERE Year = '{top_tr_yr}' GROUP BY State ORDER BY Transaction_amount DESC LIMIT 10;")
+            top_trans_tab = cursor.fetchall()
+            df_top_trans_tab = pd.DataFrame(np.array(top_trans_tab), columns=['State', 'Top Transaction amount'])
+            df_df_top_trans_tab = df_top_trans_tab.set_index(pd.Index(range(1, len(df_top_trans_tab)+1)))
 
-        # Top Transaction Analysis bar chart query
-        cursor.execute(f"SELECT State, SUM(Transaction_amount) As Transaction_amount FROM top_transaction WHERE Year = '{top_tr_yr}' GROUP BY State ORDER BY Transaction_amount DESC LIMIT 10;")
-        top_trans_tab = cursor.fetchall()
-        df_top_trans_tab = pd.DataFrame(np.array(top_trans_tab), columns=['State', 'Top Transaction amount'])
-        df_df_top_trans_tab = df_top_trans_tab.set_index(pd.Index(range(1, len(df_top_trans_tab)+1)))
+            # Top Transaction Analysis table query
+            cursor.execute(f"SELECT State, SUM(Transaction_amount) as Transaction_amount, SUM(Transaction_count) as Transaction_count FROM top_transaction WHERE Year = '{top_tr_yr}' GROUP BY State ORDER BY Transaction_amount DESC LIMIT 10;")
+            top_trans_alys = cursor.fetchall()
+            df_top_trans_alys = pd.DataFrame(np.array(top_trans_alys), columns=['State', 'Top Transaction amount','Total Transaction count'])
+            df_df_top_trans_alys = df_top_trans_alys.set_index(pd.Index(range(1, len(df_top_trans_alys)+1)))
 
-        # Top Transaction Analysis table query
-        cursor.execute(f"SELECT State, SUM(Transaction_amount) as Transaction_amount, SUM(Transaction_count) as Transaction_count FROM top_transaction WHERE Year = '{top_tr_yr}' GROUP BY State ORDER BY Transaction_amount DESC LIMIT 10;")
-        top_trans_alys = cursor.fetchall()
-        df_top_trans_alys = pd.DataFrame(np.array(top_trans_alys), columns=['State', 'Top Transaction amount','Total Transaction count'])
-        df_df_top_trans_alys = df_top_trans_alys.set_index(pd.Index(range(1, len(df_top_trans_alys)+1)))
+            # Output  
 
-        # Output  
+            # Overall India Transaction Analysis Bar chart 
+            df_df_top_trans_tab['State'] = df_df_top_trans_tab['State'].astype(str)
+            df_df_top_trans_tab['Top Transaction amount'] = df_df_top_trans_tab['Top Transaction amount'].astype(float)
+            df_df_top_trans_tab_fig = px.bar(df_df_top_trans_tab , x = 'State', y ='Top Transaction amount', color ='Top Transaction amount', color_continuous_scale = 'thermal', title = 'Top Transaction Analysis Chart', height = 600,)
+            df_df_top_trans_tab_fig.update_layout(title_font=dict(size=35),title_font_color='#6739b7')
+            st.plotly_chart(df_df_top_trans_tab_fig,use_container_width=True)
 
-        # Overall India Transaction Analysis Bar chart 
-        df_df_top_trans_tab['State'] = df_df_top_trans_tab['State'].astype(str)
-        df_df_top_trans_tab['Top Transaction amount'] = df_df_top_trans_tab['Top Transaction amount'].astype(float)
-        df_df_top_trans_tab_fig = px.bar(df_df_top_trans_tab , x = 'State', y ='Top Transaction amount', color ='Top Transaction amount', color_continuous_scale = 'thermal', title = 'Top Transaction Analysis Chart', height = 600,)
-        df_df_top_trans_tab_fig.update_layout(title_font=dict(size=33),title_font_color='#6739b7')
-        st.plotly_chart(df_df_top_trans_tab_fig,use_container_width=True)
+            # Overall India Total Transaction calculation Table 
+            st.header(':violet[Top 10 State Transaction Analysis]')
+            st.dataframe(df_df_top_trans_alys)
 
-        # Overall India Total Transaction calculation Table 
-        st.header(':violet[Total calculation]')
-        st.subheader('Top Transaction Analysis')
-        st.dataframe(df_df_top_trans_alys)
+        except ValueError:
+            st.write(':red[Data not available]')  
 
 
     # Overall India Top User
@@ -390,26 +409,201 @@ else:
         top_us_yr = st.selectbox('**Select Year**', ('2018','2019','2020','2021','2022','2023'),key='top_us_yr')
 
         # SQL Query
+        
+        try:
+            # Top User Analysis bar chart query
+            cursor.execute(f"SELECT State, SUM(Registered_Users) AS Top_user FROM top_user WHERE Year='{top_us_yr}' GROUP BY State ORDER BY Top_user DESC LIMIT 10;")
+            top_user_tab = cursor.fetchall()
+            df_top_user_tab = pd.DataFrame(np.array(top_user_tab), columns=['State', 'Total User count'])
+            df_df_top_user_tab = df_top_user_tab.set_index(pd.Index(range(1, len(df_top_user_tab)+1)))
 
-        # Top User Analysis bar chart query
-        cursor.execute(f"SELECT State, SUM(Registered_Users) AS Top_user FROM top_user WHERE Year='{top_us_yr}' GROUP BY State ORDER BY Top_user DESC LIMIT 10;")
-        top_user_tab = cursor.fetchall()
-        df_top_user_tab = pd.DataFrame(np.array(top_user_tab), columns=['State', 'Total User count'])
-        df_df_top_user_tab = df_top_user_tab.set_index(pd.Index(range(1, len(df_top_user_tab)+1)))
+            # Output
 
-        # Output
+            # Overall India User Analysis Bar chart
+            df_top_user_tab['State'] = df_df_top_user_tab['State'].astype(str)
+            df_df_top_user_tab['Total User count'] = df_df_top_user_tab['Total User count'].astype(float)
+            df_df_top_user_tab_fig = px.bar(df_df_top_user_tab , x = 'State', y ='Total User count', color ='Total User count', color_continuous_scale = 'thermal', title = 'Top User Analysis Chart', height = 600,)
+            df_df_top_user_tab_fig.update_layout(title_font=dict(size=35),title_font_color='#6739b7')
+            st.plotly_chart(df_df_top_user_tab_fig,use_container_width=True)
 
-        # Overall India User Analysis Bar chart
-        df_top_user_tab['State'] = df_df_top_user_tab['State'].astype(str)
-        df_df_top_user_tab['Total User count'] = df_df_top_user_tab['Total User count'].astype(float)
-        df_df_top_user_tab_fig = px.bar(df_df_top_user_tab , x = 'State', y ='Total User count', color ='Total User count', color_continuous_scale = 'thermal', title = 'Top User Analysis Chart', height = 600,)
-        df_df_top_user_tab_fig.update_layout(title_font=dict(size=33),title_font_color='#6739b7')
-        st.plotly_chart(df_df_top_user_tab_fig,use_container_width=True)
+            # Overall India Total Transaction calculation Table 
+            st.header(':violet[Top 10 State User Analysis]')
+            st.dataframe(df_df_top_user_tab)
 
-        # Overall India Total Transaction calculation Table 
-        st.header(':violet[Total calculation]')
-        st.subheader('Total User Analysis')
-        st.dataframe(df_df_top_user_tab)
+        except ValueError:
+            st.write(':red[Data not available]')    
 
+else:
+    # Select tab
+    tab7, tab8 = st.tabs(['Transaction','User'])
+
+    # Overall India Top Transaction 
+    with tab7:
+
+        col8, col9 = st.columns(2)
+        with col8:
+         top1_tr_yr = st.selectbox('**Select Year**', ('2018','2019','2020','2021','2022','2023'),key='top1_tr_yr')
+        with col9:
+         top1_tr_qtr = st.selectbox('**Select Quarter**', ('1','2','3','4'),key='top1_tr_qtr') 
+
+        # SQL Query
+        
+        try:
+            # Top Transaction Analysis bar chart query
+            cursor.execute(f"SELECT State, SUM(Transaction_amount) As Transaction_amount FROM top_transaction WHERE Year = '{top1_tr_yr}' AND Quarter ='{top1_tr_qtr}' GROUP BY State ORDER BY Transaction_amount DESC LIMIT 10;")
+            top1_trans_tab = cursor.fetchall()
+            df_top1_trans_tab = pd.DataFrame(np.array(top1_trans_tab), columns=['State', 'Top Transaction amount'])
+            df_df_top1_trans_tab = df_top1_trans_tab.set_index(pd.Index(range(1, len(df_top1_trans_tab)+1)))
+
+            # Top Transaction Analysis table query
+            cursor.execute(f"SELECT State, SUM(Transaction_amount) as Transaction_amount, SUM(Transaction_count) as Transaction_count FROM top_transaction WHERE Year = '{top1_tr_yr}' AND Quarter='{top1_tr_qtr}' GROUP BY State ORDER BY Transaction_amount DESC LIMIT 10;")
+            top1_trans_alys = cursor.fetchall()
+            df_top1_trans_alys = pd.DataFrame(np.array(top1_trans_alys), columns=['State', 'Top Transaction amount','Total Transaction count'])
+            df_df_top1_trans_alys = df_top1_trans_alys.set_index(pd.Index(range(1, len(df_top1_trans_alys)+1)))
+            # Output  
+
+            # Overall India Transaction Analysis Bar chart 
+            df_df_top1_trans_tab['State'] = df_df_top1_trans_tab['State'].astype(str)
+            df_df_top1_trans_tab['Top Transaction amount'] = df_df_top1_trans_tab['Top Transaction amount'].astype(float)
+            df_df_top1_trans_tab_fig = px.bar(df_df_top1_trans_tab , x = 'State', y ='Top Transaction amount', color ='Top Transaction amount', color_continuous_scale = 'thermal', title = 'Top 10 States Transaction Analysis Chart', height = 600,)
+            df_df_top1_trans_tab_fig.update_layout(title_font=dict(size=35),title_font_color='#6739b7')
+            st.plotly_chart(df_df_top1_trans_tab_fig,use_container_width=True)
+
+            # Overall India Total Transaction calculation Table 
+            st.header(':violet[Top 10 States]')
+            st.subheader('Transaction Analysis')
+            st.dataframe(df_df_top1_trans_alys)
+
+             # Top 10 district Transaction Analysis bar chart query
+            cursor.execute(f"SELECT District, District_Amount FROM top_Transaction_district WHERE Year = '{top1_tr_yr}' AND Quarter ='{top1_tr_qtr}' ORDER BY District_Amount DESC LIMIT 10;")
+            top1_trans_dist_tab = cursor.fetchall()
+            df_top1_trans_dist_tab = pd.DataFrame(np.array(top1_trans_dist_tab), columns=['District', 'Transaction amount'])
+            df_df_top1_trans_dist_tab = df_top1_trans_dist_tab.set_index(pd.Index(range(1, len(df_top1_trans_dist_tab)+1)))
+
+            # Transaction Analysis table query
+            cursor.execute(f"SELECT District, District_Amount, District_trans_count FROM top_Transaction_district WHERE Year = '{top1_tr_yr}' AND Quarter='{top1_tr_qtr}' ORDER BY District_Amount DESC LIMIT 10;")
+            top1_trans_dist_alys = cursor.fetchall()
+            df_top1_trans_dist_alys = pd.DataFrame(np.array(top1_trans_dist_alys), columns=['District', 'Transaction amount','Transaction count'])
+            df_df_top1_trans_dist_alys = df_top1_trans_dist_alys.set_index(pd.Index(range(1, len(df_top1_trans_dist_alys)+1)))
+ 
+            # bar chart
+            df_df_top1_trans_dist_tab['District'] = df_df_top1_trans_dist_tab['District'].astype(str)
+            df_df_top1_trans_dist_tab['Transaction amount'] = df_df_top1_trans_dist_tab['Transaction amount'].astype(float)
+            df_df_top1_trans_dist_tab_fig = px.bar(df_df_top1_trans_dist_tab , x = 'District', y ='Transaction amount', color ='Transaction amount', color_continuous_scale = 'bluered_r', title = 'Top 10 Districts Transaction Analysis Chart', height = 600,)
+            df_df_top1_trans_dist_tab_fig.update_layout(title_font=dict(size=35),title_font_color='#6739b7')
+            st.plotly_chart(df_df_top1_trans_dist_tab_fig,use_container_width=True)
+
+            # Overall India Total Transaction calculation Table 
+            st.header(':violet[Top 10 Districts]')
+            st.subheader('Amount Transaction')
+            st.dataframe(df_df_top1_trans_dist_alys)
+
+             # Top 10 pincode Transaction Analysis bar chart query
+            cursor.execute(f"SELECT Pincode_trans, Transaction_amount FROM top_transaction WHERE Year = '{top1_tr_yr}' AND Quarter ='{top1_tr_qtr}' ORDER BY Transaction_amount DESC LIMIT 10;")
+            top1_trans_pin_tab = cursor.fetchall()
+            df_top1_trans_pin_tab = pd.DataFrame(np.array(top1_trans_pin_tab), columns=['Pincode', 'Transaction amount'])
+            df_df_top1_trans_pin_tab = df_top1_trans_pin_tab.set_index(pd.Index(range(1, len(df_top1_trans_pin_tab)+1)))
+
+            # Transaction Analysis table query
+            cursor.execute(f"SELECT Pincode_trans, Transaction_amount, Transaction_count FROM top_transaction WHERE Year = '{top1_tr_yr}' AND Quarter='{top1_tr_qtr}' ORDER BY Transaction_amount DESC LIMIT 10;")
+            top1_trans_pin_alys = cursor.fetchall()
+            df_top1_trans_pin_alys = pd.DataFrame(np.array(top1_trans_pin_alys), columns=['Pincode', 'Total Transaction amount','Total Transaction count'])
+            df_df_top1_trans_pin_alys = df_top1_trans_pin_alys.set_index(pd.Index(range(1, len(df_top1_trans_pin_alys)+1)))
+ 
+            # bar chart
+            df_df_top1_trans_pin_tab['Pincode'] = df_df_top1_trans_pin_tab['Pincode'].astype(str)
+            df_df_top1_trans_pin_tab['Transaction amount'] = df_df_top1_trans_pin_tab['Transaction amount'].astype(float)
+            df_df_top1_trans_pin_tab_fig = px.bar(df_df_top1_trans_pin_tab , x = 'Pincode', y ='Transaction amount', color ='Transaction amount', color_continuous_scale = 'thermal', title = 'Top 10 Pincodes Transaction Analysis Chart', height = 600,)
+            df_df_top1_trans_pin_tab_fig.update_layout(title_font=dict(size=35),title_font_color='#6739b7')
+            #st.plotly_chart(df_df_top1_trans_pin_tab_fig,use_container_width=True)
+
+            # Overall India Total Transaction calculation Table 
+            st.header(':violet[Top 10 Pincodes]')
+            st.subheader('Amount Transaction')
+            st.dataframe(df_df_top1_trans_pin_alys)
+        
+        except ValueError:
+            st.write(':red[Data not available]')       
+
+         
+    # Overall India Top User
+    with tab8:
+
+        try:
+
+            col10, col11 = st.columns(2)
+            with col10:
+             top1_us_yr = st.selectbox('**Select Year**', ('2018','2019','2020','2021','2022','2023'),key='top1_us_yr')
+            with col11:
+             top1_us_qtr = st.selectbox('**Select Quarter**', ('1','2','3','4'),key='top1_us_qtr') 
+
+            # SQL Query
+
+            # Top User Analysis bar chart query
+            cursor.execute(f"SELECT State, SUM(Registered_Users) AS Top_user FROM top_user WHERE Year='{top1_us_yr}' AND Quarter='{top1_us_qtr}' GROUP BY State ORDER BY Top_user DESC LIMIT 10;")
+            top1_user_tab = cursor.fetchall()
+            df_top1_user_tab = pd.DataFrame(np.array(top1_user_tab), columns=['State', 'Total User count'])
+            df_df_top1_user_tab = df_top1_user_tab.set_index(pd.Index(range(1, len(df_top1_user_tab)+1)))
+
+            # Output
+
+            # Overall India User Analysis Bar chart
+            df_top1_user_tab['State'] = df_df_top1_user_tab['State'].astype(str)
+            df_df_top1_user_tab['Total User count'] = df_df_top1_user_tab['Total User count'].astype(float)
+            df_df_top1_user_tab_fig = px.bar(df_df_top1_user_tab , x = 'State', y ='Total User count', color ='Total User count', color_continuous_scale = 'Inferno', title = 'Top 10 States User Analysis Chart', height = 600,)
+            df_df_top1_user_tab_fig.update_layout(title_font=dict(size=35),title_font_color='#6739b7')
+            st.plotly_chart(df_df_top1_user_tab_fig,use_container_width=True)
+
+             # Overall India Total Transaction calculation Table 
+            st.header(':violet[Top 10 States]')
+            st.subheader('Users Count')
+            st.dataframe(df_df_top1_user_tab)
+
+
+            # Top 10 district User Analysis bar chart query
+            cursor.execute(f"SELECT District, District_Users FROM top_user_district WHERE Year='{top1_us_yr}' AND Quarter='{top1_us_qtr}' ORDER BY District_Users DESC LIMIT 10;")
+            top1_user_dist_tab = cursor.fetchall()
+            df_top1_user_dist_tab = pd.DataFrame(np.array(top1_user_dist_tab), columns=['District', 'District User count'])
+            df_df_top1_user_dist_tab = df_top1_user_dist_tab.set_index(pd.Index(range(1, len(df_top1_user_dist_tab)+1)))
+
+            # Overall India - Pincode User Analysis Bar chart
+            df_top1_user_dist_tab['District'] = str(df_top1_user_dist_tab['District'])
+            df_top1_user_dist_tab['District'] = df_df_top1_user_dist_tab['District'].astype(str)
+            df_df_top1_user_dist_tab['District User count'] = df_df_top1_user_dist_tab['District User count'].astype(float)
+            df_df_top1_user_dist_tab_fig = px.bar(df_df_top1_user_dist_tab , x = 'District', y ='District User count', color ='District User count', color_continuous_scale = 'thermal', title = 'Top 10 Districts User Analysis Chart', height = 600,)
+            df_df_top1_user_dist_tab_fig.update_layout(title_font=dict(size=35),title_font_color='#6739b7')
+            st.plotly_chart(df_df_top1_user_dist_tab_fig,use_container_width=True)
+
+            # Output
+
+            # Overall India Total Transaction calculation Table 
+            st.header(':violet[Top 10 Districts]')
+            st.subheader('Users Count')
+            st.dataframe(df_df_top1_user_dist_tab)
+
+            # Top 10 pincode User Analysis bar chart query
+            cursor.execute(f"SELECT Pincode, Registered_Users FROM top_user WHERE Year='{top1_us_yr}' AND Quarter='{top1_us_qtr}' ORDER BY Registered_Users DESC LIMIT 10;")
+            top1_user_pin_tab = cursor.fetchall()
+            df_top1_user_pin_tab = pd.DataFrame(np.array(top1_user_pin_tab), columns=['Pincode', 'Total User count'])
+            df_df_top1_user_pin_tab = df_top1_user_pin_tab.set_index(pd.Index(range(1, len(df_top1_user_pin_tab)+1)))
+
+            # Overall India - Pincode User Analysis Bar chart
+            df_top1_user_pin_tab['Pincode'] = str(df_top1_user_pin_tab['Pincode'])
+            df_top1_user_pin_tab['Pincode'] = df_df_top1_user_pin_tab['Pincode'].astype(str)
+            df_df_top1_user_pin_tab['Total User count'] = df_df_top1_user_pin_tab['Total User count'].astype(float)
+            df_df_top1_user_pin_tab_fig = px.bar(df_df_top1_user_pin_tab , x = 'Pincode', y ='Total User count', color ='Total User count', color_continuous_scale = 'twilight', title = 'Top 10 Pincodes User Analysis Chart', height = 600,)
+            df_df_top1_user_pin_tab_fig.update_layout(title_font=dict(size=35),title_font_color='#6739b7')
+            #st.plotly_chart(df_df_top1_user_pin_tab_fig,use_container_width=True)
+
+            # Output
+
+            # Overall India Total Transaction calculation Table 
+            st.header(':violet[Top 10 pincodes]')
+            st.subheader('Users Count')
+            st.dataframe(df_df_top1_user_pin_tab)
+
+        except ValueError:
+            st.write(':red[Data not available]')       
+    
 
 
