@@ -89,7 +89,7 @@ if option == 'Overall India':
             # Geo visualization dashboard for Transaction 
             # Drop a State column from df_Trans_tab
             df_Trans_tab.drop(columns=['State'], inplace=True)
-            # Clone the gio data
+            # Clone the geo data
             url = "https://gist.githubusercontent.com/jbrobst/56c13bbbf9d97d187fea01ca62ea5112/raw/e388c4cae20aa53cb5090210a42ebb9b765c0a36/india_states.geojson"
             response = requests.get(url)
             data1 = json.loads(response.content)
@@ -98,7 +98,7 @@ if option == 'Overall India':
             state_names_trans.sort()
             # Create a DataFrame with the state names column
             df_state_names_trans = pd.DataFrame({'State': state_names_trans})
-            # Combine the Gio State name with df_Trans_tab
+            # Combine the Geo State name with df_Trans_tab
             df_state_names_trans['Transaction_amount']=df_Trans_tab
             # convert dataframe to csv file
             df_state_names_trans.to_csv('State_trans.csv', index=False)
@@ -165,7 +165,7 @@ if option == 'Overall India':
 
             # Drop a State column from df_user_tab
             df_user_tab.drop(columns=['State'], inplace=True)
-            # Clone the gio data
+            # Clone the geo data
             url = "https://gist.githubusercontent.com/jbrobst/56c13bbbf9d97d187fea01ca62ea5112/raw/e388c4cae20aa53cb5090210a42ebb9b765c0a36/india_states.geojson"
             response = requests.get(url)
             data2 = json.loads(response.content)
@@ -275,7 +275,7 @@ elif option =='State wise':
             #pie chart
 
             #df_df_st_Trans_bar_fig = px.pie(df_df_st_Trans_bar , names = 'Transaction_type', values ='Transaction_amount',hole=0.4) 
-            #st.plotly_chart(df_df_st_Trans_bar_fig)
+            #st.plotly_chart(df_df_st_Trans_bar_fig,use_container_width=True)
 
 
             # State wise Total Transaction calculation Table
@@ -341,7 +341,7 @@ elif option =='State wise':
             #pie chart
             
             df_df_st_user_tab_fig = px.pie(df_df_st_user_tab , names = 'Brands', values ='User Count',hole=0.4) 
-            st.plotly_chart(df_df_st_user_tab_fig)
+            st.plotly_chart(df_df_st_user_tab_fig,use_container_width=True)
 
            
 
